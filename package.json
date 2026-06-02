@@ -1,0 +1,32 @@
+{
+  "name": "video-skillkit",
+  "version": "0.1.0",
+  "description": "Local-first agent skill for grounded product video briefs and production manifests.",
+  "type": "module",
+  "bin": {
+    "video-skillkit": "./bin/video-skillkit.js"
+  },
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check src/*.js && node --check bin/video-skillkit.js",
+    "smoke": "node bin/video-skillkit.js brief fixtures/product-repo --out .tmp/smoke && node bin/video-skillkit.js validate .tmp/smoke/video.json",
+    "build": "npm run check"
+  },
+  "keywords": [
+    "agent-skill",
+    "video",
+    "pre-production",
+    "cli"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "bin",
+    "src",
+    "docs",
+    "SKILL.md",
+    "README.md"
+  ]
+}
