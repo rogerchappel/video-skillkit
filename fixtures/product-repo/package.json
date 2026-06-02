@@ -1,0 +1,8 @@
+{
+  "name": "fixture-cli",
+  "description": "A fixture command-line tool for repeatable local workflows.",
+  "scripts": {
+    "test": "node --test",
+    "smoke": "node index.js --help"
+  }
+}
