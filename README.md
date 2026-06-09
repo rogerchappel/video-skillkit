@@ -37,3 +37,12 @@ The `brief` command emits `video.json` for downstream tools and `brief.md` for h
 - V1 inspects top-level README and package metadata only.
 - Asset validation checks local existence, not visual suitability.
 - The generated script is a draft, not a final brand review.
+
+## Development
+
+Run the same checks locally before opening a PR:
+
+- `npm run check` - node --check src/*.js && node --check bin/video-skillkit.js
+- `npm run build` - npm run check
+- `npm test` - node --test
+- `npm run smoke` - node bin/video-skillkit.js brief fixtures/product-repo --out .tmp/smoke && node bin/video-skillkit.js validate .tmp/smoke/video.json
