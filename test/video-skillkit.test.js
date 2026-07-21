@@ -41,3 +41,27 @@ test("fails validation when an asset is missing", async () => {
   assert.match(report.errors.join("\n"), /Missing asset/);
   await rm(tmp, { recursive: true, force: true });
 });
+
+test("rejects assets in sibling directories with a shared path prefix", async () => {
+  const tmp = await mkdtemp(path.join(os.tmpdir(), "video-skillkit-"));
+  const repoRoot = path.join(tmp, "repo");
+  const siblingAsset = path.join(tmp, "repo-private", "secret.png");
+  const manifest = {
+    schemaVersion: "video-skillkit.v1",
+    repoRoot,
+    title: "Containment test",
+    hook: "Verify local assets",
+    script: "Validate assets before production.",
+    scenes: [{ id: "scene-1" }],
+    safetyNotes: ["Keep assets inside the repository."],
+    assets: [{ path: siblingAsset }]
+  };
+  const file = path.join(tmp, "video.json");
+  await writeFile(file, JSON.stringify(manifest));
+
+  const report = await validateManifest(file);
+
+  assert.equal(report.ok, false);
+  assert.match(report.errors.join("\n"), /Asset escapes repo root/);
+  await rm(tmp, { recursive: true, force: true });
+});
