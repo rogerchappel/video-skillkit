@@ -23,7 +23,8 @@ export async function validateManifest(manifestPath) {
   const repoRoot = manifest.repoRoot ? path.resolve(manifest.repoRoot) : path.dirname(absolute);
   for (const asset of manifest.assets ?? []) {
     const assetPath = path.resolve(repoRoot, asset.path);
-    if (!assetPath.startsWith(repoRoot)) {
+    const relativeAssetPath = path.relative(repoRoot, assetPath);
+    if (relativeAssetPath === ".." || relativeAssetPath.startsWith(`..${path.sep}`) || path.isAbsolute(relativeAssetPath)) {
       errors.push(`Asset escapes repo root: ${asset.path}`);
       continue;
     }
