@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Verify the packed npm artifact by installing it in a clean temporary project
+  and running the CLI against the bundled smoke fixture.
+
 ## 0.1.0
 
 - Initial local-first video brief CLI and reusable agent skill.

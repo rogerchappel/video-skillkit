@@ -52,5 +52,8 @@ The release gate covers:
 - `npm run build` - npm run check
 - `npm test` - node --test
 - `npm run smoke` - node bin/video-skillkit.js brief fixtures/product-repo --out .tmp/smoke && node bin/video-skillkit.js validate .tmp/smoke/video.json
-- `npm run package:smoke` - npm pack --dry-run
+- `npm run package:smoke` - pack the publishable artifact, install it in a clean temporary project, and run the packaged CLI against its bundled fixture
 - `npm run release:check` - npm test && npm run check && npm run smoke && npm run package:smoke
+
+The fixture under `fixtures/product-repo` is intentionally included in the npm
+package so the artifact itself can be verified without repository-only files.
