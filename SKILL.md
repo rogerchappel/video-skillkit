@@ -29,4 +29,7 @@ Review the generated `brief.md`, confirm claims are backed by local evidence, th
 
 ## Validation
 
-Run `npm test`, `npm run check`, and `npm run smoke` before publishing updates. Validation fails on missing assets and warns on over-strong promotional claims.
+Run `npm run release:check` before publishing updates. The release check includes
+`npm run package:smoke`, which installs the packed artifact in a clean temporary
+project and validates a manifest generated from its bundled public fixture.
+Validation fails on missing assets and warns on over-strong promotional claims.
