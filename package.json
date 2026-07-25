@@ -11,7 +11,7 @@
     "check": "node --check src/*.js && node --check bin/video-skillkit.js",
     "smoke": "node bin/video-skillkit.js brief fixtures/product-repo --out .tmp/smoke && node bin/video-skillkit.js validate .tmp/smoke/video.json",
     "build": "npm run check",
-    "package:smoke": "npm pack --dry-run",
+    "package:smoke": "node scripts/package-smoke.js",
     "release:check": "npm test && npm run check && npm run smoke && npm run package:smoke"
   },
   "keywords": [
