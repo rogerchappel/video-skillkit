@@ -28,6 +28,7 @@
     "bin",
     "src",
     "docs",
+    "fixtures/product-repo",
     "SKILL.md",
     "README.md",
     "LICENSE",
