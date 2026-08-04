@@ -19,6 +19,7 @@ video-skillkit validate video-plan/video.json
 ```
 
 The `brief` command emits `video.json` for downstream tools and `brief.md` for human review.
+Unknown options, extra positional arguments, and `--out` without a value are rejected with usage guidance.
 
 ## Examples
 
