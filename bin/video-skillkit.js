@@ -6,17 +6,60 @@ import { validateManifest } from "../src/validate.js";
 
 const args = process.argv.slice(2);
 
-function readOption(name, fallback) {
-  const index = args.indexOf(name);
-  if (index === -1) return fallback;
-  return args[index + 1] ?? fallback;
-}
-
 function usage() {
   return `Usage:
   video-skillkit brief <repo> --out <dir>
   video-skillkit validate <video.json>
 `;
+}
+
+function usageError(message) {
+  return new Error(`${message}\n\n${usage()}`);
+}
+
+function parseBriefArgs(commandArgs) {
+  if (commandArgs.length === 0) {
+    throw usageError("Missing repo path.");
+  }
+  if (commandArgs[0].startsWith("-")) {
+    throw usageError(`Unknown option: ${commandArgs[0]}`);
+  }
+
+  const repo = commandArgs[0];
+  let outDir = "video-plan";
+  let hasOutDir = false;
+
+  for (let index = 1; index < commandArgs.length; index += 1) {
+    const argument = commandArgs[index];
+    if (argument !== "--out") {
+      throw usageError(argument.startsWith("-") ? `Unknown option: ${argument}` : `Unexpected argument: ${argument}`);
+    }
+    if (hasOutDir) {
+      throw usageError("Duplicate option: --out");
+    }
+    if (index + 1 >= commandArgs.length || commandArgs[index + 1].startsWith("-")) {
+      throw usageError("Missing value for --out.");
+    }
+    outDir = commandArgs[index + 1];
+    hasOutDir = true;
+    index += 1;
+  }
+
+  return { repo, outDir };
+}
+
+function parseValidateArgs(commandArgs) {
+  if (commandArgs.length === 0) {
+    throw usageError("Missing manifest path.");
+  }
+  if (commandArgs[0].startsWith("-")) {
+    throw usageError(`Unknown option: ${commandArgs[0]}`);
+  }
+  if (commandArgs.length > 1) {
+    const argument = commandArgs[1];
+    throw usageError(argument.startsWith("-") ? `Unknown option: ${argument}` : `Unexpected argument: ${argument}`);
+  }
+  return { file: commandArgs[0] };
 }
 
 async function main() {
@@ -27,9 +70,7 @@ async function main() {
   }
 
   if (command === "brief") {
-    const repo = args[1];
-    if (!repo) throw new Error("Missing repo path.");
-    const outDir = readOption("--out", "video-plan");
+    const { repo, outDir } = parseBriefArgs(args.slice(1));
     const manifest = await buildVideoBrief(repo);
     await mkdir(outDir, { recursive: true });
     await writeFile(path.join(outDir, "video.json"), `${JSON.stringify(manifest, null, 2)}\n`);
@@ -39,15 +80,14 @@ async function main() {
   }
 
   if (command === "validate") {
-    const file = args[1];
-    if (!file) throw new Error("Missing manifest path.");
+    const { file } = parseValidateArgs(args.slice(1));
     const report = await validateManifest(file);
     process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
     if (!report.ok) process.exitCode = 1;
     return;
   }
 
-  throw new Error(`Unknown command: ${command}\n${usage()}`);
+  throw usageError(`Unknown command: ${command}`);
 }
 
 function renderMarkdown(manifest) {
