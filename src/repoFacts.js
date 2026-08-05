@@ -35,9 +35,9 @@ export async function collectRepoFacts(repoDir) {
 
   const assetDir = path.join(root, "assets");
   if (dirs.includes("assets") && (await isDirectory(assetDir))) {
-    facts.assets = (await readdir(assetDir))
-      .filter((file) => !file.startsWith("."))
-      .map((file) => `assets/${file}`);
+    facts.assets = (await readdir(assetDir, { withFileTypes: true }))
+      .filter((entry) => entry.isFile() && !entry.name.startsWith("."))
+      .map((entry) => `assets/${entry.name}`);
   }
 
   return facts;
