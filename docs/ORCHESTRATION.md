@@ -9,12 +9,13 @@
 
 ## Boundaries
 
-- Local reads: repo README, package metadata, top-level assets.
+- Local reads: repo README, package metadata, and regular files directly inside
+  the top-level `assets/` directory. Nested asset directories are not traversed.
 - Local writes: generated plan directory.
 - External actions: none in this package.
 
 ## Failure Handling
 
-- Missing assets block downstream production.
+- Missing assets, directories, and malformed asset entries block downstream production.
 - Promotional warnings require human or agent review before publishing.
 - Invalid schema versions should be regenerated with the current CLI.

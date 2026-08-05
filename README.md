@@ -36,7 +36,9 @@ Unknown options, extra positional arguments, and `--out` without a value are rej
 ## Limitations
 
 - V1 inspects top-level README and package metadata only.
-- Asset validation checks local existence, not visual suitability.
+- V1 discovers regular files directly inside `assets/`; nested asset directories are ignored.
+- Asset validation requires each manifest asset to have a non-empty string `path`
+  that resolves to a regular file. It does not assess visual suitability.
 - The generated script is a draft, not a final brand review.
 
 ## Development
