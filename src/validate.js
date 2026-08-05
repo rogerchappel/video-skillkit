@@ -21,14 +21,30 @@ export async function validateManifest(manifestPath) {
   }
 
   const repoRoot = manifest.repoRoot ? path.resolve(manifest.repoRoot) : path.dirname(absolute);
-  for (const asset of manifest.assets ?? []) {
+  const assets = manifest.assets === undefined ? [] : manifest.assets;
+  if (!Array.isArray(assets)) {
+    errors.push("assets must be an array");
+  }
+
+  let checkedAssets = 0;
+  for (const [index, asset] of (Array.isArray(assets) ? assets : []).entries()) {
+    if (!asset || typeof asset !== "object" || Array.isArray(asset)) {
+      errors.push(`Asset at index ${index} must be an object`);
+      continue;
+    }
+    if (typeof asset.path !== "string" || asset.path.trim() === "") {
+      errors.push(`Asset at index ${index} must have a non-empty string path`);
+      continue;
+    }
+
+    checkedAssets += 1;
     const assetPath = path.resolve(repoRoot, asset.path);
     const relativeAssetPath = path.relative(repoRoot, assetPath);
     if (relativeAssetPath === ".." || relativeAssetPath.startsWith(`..${path.sep}`) || path.isAbsolute(relativeAssetPath)) {
       errors.push(`Asset escapes repo root: ${asset.path}`);
       continue;
     }
-    if (!(await exists(assetPath))) {
+    if (!(await isFile(assetPath))) {
       errors.push(`Missing asset: ${asset.path}`);
     }
   }
@@ -41,14 +57,13 @@ export async function validateManifest(manifestPath) {
     ok: errors.length === 0,
     errors,
     warnings,
-    checkedAssets: (manifest.assets ?? []).length
+    checkedAssets
   };
 }
 
-async function exists(target) {
+async function isFile(target) {
   try {
-    await stat(target);
-    return true;
+    return (await stat(target)).isFile();
   } catch {
     return false;
   }
