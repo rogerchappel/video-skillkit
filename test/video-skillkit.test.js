@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -39,6 +39,69 @@ test("fails validation when an asset is missing", async () => {
 
   assert.equal(report.ok, false);
   assert.match(report.errors.join("\n"), /Missing asset/);
+  await rm(tmp, { recursive: true, force: true });
+});
+
+test("ignores directories when discovering top-level assets", async () => {
+  const tmp = await mkdtemp(path.join(os.tmpdir(), "video-skillkit-"));
+  await writeFile(path.join(tmp, "package.json"), JSON.stringify({ name: "asset-fixture" }));
+  await mkdir(path.join(tmp, "assets", "frames"), { recursive: true });
+  await writeFile(path.join(tmp, "assets", "poster.png"), "fixture");
+
+  const manifest = await buildVideoBrief(tmp);
+
+  assert.deepEqual(manifest.assets.map((asset) => asset.path), ["assets/poster.png"]);
+  await rm(tmp, { recursive: true, force: true });
+});
+
+test("rejects a directory referenced as an asset", async () => {
+  const tmp = await mkdtemp(path.join(os.tmpdir(), "video-skillkit-"));
+  await mkdir(path.join(tmp, "assets", "frames"), { recursive: true });
+  const manifest = await buildVideoBrief(tmp);
+  manifest.assets = [{ path: "assets/frames", purpose: "Frames", required: true }];
+  const file = path.join(tmp, "video.json");
+  await writeFile(file, JSON.stringify(manifest));
+
+  const report = await validateManifest(file);
+
+  assert.equal(report.ok, false);
+  assert.deepEqual(report.errors, ["Missing asset: assets/frames"]);
+  assert.equal(report.checkedAssets, 1);
+  await rm(tmp, { recursive: true, force: true });
+});
+
+test("reports a non-array assets value without throwing", async () => {
+  const tmp = await mkdtemp(path.join(os.tmpdir(), "video-skillkit-"));
+  const manifest = await buildVideoBrief("fixtures/product-repo");
+  manifest.assets = { path: "assets/logo.txt" };
+  const file = path.join(tmp, "video.json");
+  await writeFile(file, JSON.stringify(manifest));
+
+  const report = await validateManifest(file);
+
+  assert.equal(report.ok, false);
+  assert.deepEqual(report.errors, ["assets must be an array"]);
+  assert.equal(report.checkedAssets, 0);
+  await rm(tmp, { recursive: true, force: true });
+});
+
+test("reports malformed asset entries without throwing", async () => {
+  const tmp = await mkdtemp(path.join(os.tmpdir(), "video-skillkit-"));
+  const manifest = await buildVideoBrief("fixtures/product-repo");
+  manifest.assets = [null, "assets/logo.txt", {}, { path: "" }];
+  const file = path.join(tmp, "video.json");
+  await writeFile(file, JSON.stringify(manifest));
+
+  const report = await validateManifest(file);
+
+  assert.equal(report.ok, false);
+  assert.deepEqual(report.errors, [
+    "Asset at index 0 must be an object",
+    "Asset at index 1 must be an object",
+    "Asset at index 2 must have a non-empty string path",
+    "Asset at index 3 must have a non-empty string path"
+  ]);
+  assert.equal(report.checkedAssets, 0);
   await rm(tmp, { recursive: true, force: true });
 });
 
