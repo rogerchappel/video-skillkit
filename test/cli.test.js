@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
@@ -55,5 +55,37 @@ test("documented brief and validate commands succeed", async () => {
   const validate = runCli(["validate", path.join(outDir, "video.json")], cwd);
   assert.equal(validate.status, 0, validate.stderr);
   assert.equal(JSON.parse(validate.stdout).ok, true);
+  await rm(cwd, { recursive: true, force: true });
+});
+
+test("validate returns a JSON report for malformed core fields", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "video-skillkit-cli-"));
+  const file = path.join(cwd, "video.json");
+  await writeFile(file, JSON.stringify({
+    schemaVersion: "video-skillkit.v1",
+    repoRoot: [],
+    title: {},
+    hook: 42,
+    script: true,
+    scenes: [null],
+    safetyNotes: [false],
+    assets: []
+  }));
+
+  const result = runCli(["validate", file], cwd);
+  const report = JSON.parse(result.stdout);
+
+  assert.equal(result.status, 1);
+  assert.equal(result.stderr, "");
+  assert.equal(report.ok, false);
+  assert.deepEqual(report.errors, [
+    "title must be a non-empty string",
+    "hook must be a non-empty string",
+    "script must be a non-empty string",
+    "repoRoot must be a non-empty string",
+    "Scene at index 0 must be an object",
+    "Safety note at index 0 must be a non-empty string"
+  ]);
+  assert.equal(report.checkedAssets, 0);
   await rm(cwd, { recursive: true, force: true });
 });
