@@ -105,6 +105,37 @@ test("reports malformed asset entries without throwing", async () => {
   await rm(tmp, { recursive: true, force: true });
 });
 
+test("reports malformed core manifest fields without throwing", async (t) => {
+  const cases = [
+    ["title", {}, "title must be a non-empty string"],
+    ["hook", 42, "hook must be a non-empty string"],
+    ["script", true, "script must be a non-empty string"],
+    ["repoRoot", [], "repoRoot must be a non-empty string"],
+    ["scenes", {}, "At least one scene is required"],
+    ["scenes", [null], "Scene at index 0 must be an object"],
+    ["safetyNotes", "review claims", "Safety notes are required"],
+    ["safetyNotes", [false], "Safety note at index 0 must be a non-empty string"]
+  ];
+
+  for (const [field, value, expectedError] of cases) {
+    await t.test(`${field} rejects ${JSON.stringify(value)}`, async () => {
+      const tmp = await mkdtemp(path.join(os.tmpdir(), "video-skillkit-"));
+      const manifest = await buildVideoBrief("fixtures/product-repo");
+      manifest.assets = [];
+      manifest[field] = value;
+      const file = path.join(tmp, "video.json");
+      await writeFile(file, JSON.stringify(manifest));
+
+      const report = await validateManifest(file);
+
+      assert.equal(report.ok, false);
+      assert.deepEqual(report.errors, [expectedError]);
+      assert.equal(report.checkedAssets, 0);
+      await rm(tmp, { recursive: true, force: true });
+    });
+  }
+});
+
 test("rejects assets in sibling directories with a shared path prefix", async () => {
   const tmp = await mkdtemp(path.join(os.tmpdir(), "video-skillkit-"));
   const repoRoot = path.join(tmp, "repo");
