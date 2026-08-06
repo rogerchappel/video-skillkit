@@ -21,6 +21,19 @@ video-skillkit validate video-plan/video.json
 The `brief` command emits `video.json` for downstream tools and `brief.md` for human review.
 Unknown options, extra positional arguments, and `--out` without a value are rejected with usage guidance.
 
+### Manifest validation contract
+
+A V1 manifest is a JSON object with `schemaVersion` set to `video-skillkit.v1`;
+non-empty string values for `repoRoot`, `title`, `hook`, and `script`; a non-empty
+`scenes` array of objects; and a non-empty `safetyNotes` array of non-empty
+strings. `assets` is optional, but when present it must be an array of objects
+with non-empty string `path` values.
+
+The `validate` command always prints a JSON report for a parsed manifest. Invalid
+field types are listed deterministically in `errors`, `ok` is `false`, and the
+process exits with status 1. `checkedAssets` records how many structurally valid
+asset paths were checked, even when other manifest fields are invalid.
+
 ## Examples
 
 - Turn a CLI repo into a three-scene product demo brief.
