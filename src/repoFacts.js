@@ -27,9 +27,10 @@ export async function collectRepoFacts(repoDir) {
     }
     if (file === "package.json") {
       const packageJson = JSON.parse(content);
-      facts.packageName = packageJson.name ?? facts.name;
-      facts.packageDescription = packageJson.description ?? null;
-      facts.scripts = Object.keys(packageJson.scripts ?? {});
+      const metadata = isObject(packageJson) ? packageJson : {};
+      facts.packageName = normalizedString(metadata.name) ?? facts.name;
+      facts.packageDescription = normalizedString(metadata.description);
+      facts.scripts = isObject(metadata.scripts) ? Object.keys(metadata.scripts) : [];
     }
   }
 
@@ -41,6 +42,15 @@ export async function collectRepoFacts(repoDir) {
   }
 
   return facts;
+}
+
+function normalizedString(value) {
+  if (typeof value !== "string") return null;
+  return value.trim() || null;
+}
+
+function isObject(value) {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
 function extractReadmeSummary(readme) {
