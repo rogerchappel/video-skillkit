@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { buildVideoBrief } from "../src/brief.js";
+import { collectRepoFacts } from "../src/repoFacts.js";
 import { validateManifest } from "../src/validate.js";
 
 test("builds a grounded video manifest from fixture repo facts", async () => {
@@ -13,6 +14,50 @@ test("builds a grounded video manifest from fixture repo facts", async () => {
   assert.equal(manifest.product.name, "fixture-cli");
   assert.ok(manifest.product.evidence.includes("README.md"));
   assert.equal(manifest.assets.length, 2);
+});
+
+test("normalizes null package metadata to repository and README facts", async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), "video-skillkit-null-package-"));
+  await writeFile(path.join(repo, "README.md"), "# Example\n\nREADME fallback summary.\n");
+  await writeFile(path.join(repo, "package.json"), "null\n");
+
+  const facts = await collectRepoFacts(repo);
+  const manifest = await buildVideoBrief(repo);
+
+  assert.equal(facts.packageName, path.basename(repo));
+  assert.equal(facts.packageDescription, null);
+  assert.deepEqual(facts.scripts, []);
+  assert.equal(manifest.product.name, path.basename(repo));
+  assert.equal(manifest.product.description, "README fallback summary.");
+  assertManifestTextIsNormalized(manifest);
+  await rm(repo, { recursive: true, force: true });
+});
+
+test("normalizes arrays and wrong-type package fields", async () => {
+  const repos = [
+    { packageJson: [], summary: "Array package summary." },
+    {
+      packageJson: { name: { unexpected: true }, description: ["not", "text"], scripts: "npm test" },
+      summary: "Wrong-type package summary."
+    },
+    { packageJson: { name: "  ", description: "\t", scripts: null }, summary: "Blank package summary." }
+  ];
+
+  for (const fixture of repos) {
+    const repo = await mkdtemp(path.join(os.tmpdir(), "video-skillkit-wrong-package-"));
+    await writeFile(path.join(repo, "README.md"), `# Example\n\n${fixture.summary}\n`);
+    await writeFile(path.join(repo, "package.json"), `${JSON.stringify(fixture.packageJson)}\n`);
+
+    const facts = await collectRepoFacts(repo);
+    const manifest = await buildVideoBrief(repo);
+
+    assert.equal(facts.packageName, path.basename(repo));
+    assert.equal(facts.packageDescription, null);
+    assert.deepEqual(facts.scripts, []);
+    assert.equal(manifest.product.description, fixture.summary);
+    assertManifestTextIsNormalized(manifest);
+    await rm(repo, { recursive: true, force: true });
+  }
 });
 
 test("validates generated manifests and reports checked assets", async () => {
@@ -41,6 +86,15 @@ test("fails validation when an asset is missing", async () => {
   assert.match(report.errors.join("\n"), /Missing asset/);
   await rm(tmp, { recursive: true, force: true });
 });
+
+function assertManifestTextIsNormalized(manifest) {
+  assert.equal(typeof manifest.title, "string");
+  assert.equal(typeof manifest.product.name, "string");
+  assert.equal(typeof manifest.product.description, "string");
+  assert.equal(typeof manifest.script, "string");
+  assert.ok(manifest.captions.every((caption) => typeof caption === "string"));
+  assert.doesNotMatch(JSON.stringify(manifest), /\[object Object\]|not,text/);
+}
 
 test("ignores directories when discovering top-level assets", async () => {
   const tmp = await mkdtemp(path.join(os.tmpdir(), "video-skillkit-"));

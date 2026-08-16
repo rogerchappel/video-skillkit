@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
@@ -56,6 +56,39 @@ test("documented brief and validate commands succeed", async () => {
   assert.equal(validate.status, 0, validate.stderr);
   assert.equal(JSON.parse(validate.stdout).ok, true);
   await rm(cwd, { recursive: true, force: true });
+});
+
+test("brief completes with normalized null and wrong-type package metadata", async () => {
+  const fixtures = [
+    { packageJson: null, summary: "Null package summary." },
+    {
+      packageJson: { name: ["wrong"], description: { wrong: true }, scripts: false },
+      summary: "Wrong-type package summary."
+    }
+  ];
+
+  for (const [index, fixture] of fixtures.entries()) {
+    const cwd = await mkdtemp(path.join(os.tmpdir(), "video-skillkit-cli-package-"));
+    const repo = path.join(cwd, `source-${index}`);
+    const outDir = path.join(cwd, "video-plan");
+    await mkdir(repo);
+    await writeFile(path.join(repo, "README.md"), `# Example\n\n${fixture.summary}\n`);
+    await writeFile(path.join(repo, "package.json"), `${JSON.stringify(fixture.packageJson)}\n`);
+
+    const result = runCli(["brief", repo, "--out", outDir], cwd);
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stderr, "");
+    assert.doesNotMatch(result.stderr, /stack|at file:/i);
+
+    const manifest = JSON.parse(await readFile(path.join(outDir, "video.json"), "utf8"));
+    assert.equal(manifest.product.name, path.basename(repo));
+    assert.equal(manifest.product.description, fixture.summary);
+    for (const value of [manifest.title, manifest.product.name, manifest.script, ...manifest.captions]) {
+      assert.equal(typeof value, "string");
+      assert.doesNotMatch(value, /\[object Object\]|wrong/);
+    }
+    await rm(cwd, { recursive: true, force: true });
+  }
 });
 
 test("validate returns a JSON report for malformed core fields", async () => {
