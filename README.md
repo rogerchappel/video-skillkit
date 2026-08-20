@@ -49,8 +49,9 @@ asset paths were checked, even when other manifest fields are invalid.
 ## Limitations
 
 - V1 inspects top-level README and package metadata only.
-- Source package metadata is treated as optional input. If `package.json` parses
-  to a non-object value, `name` or `description` is not a non-empty string, or
+- Source package metadata is treated as optional input. If `package.json` is
+  syntactically invalid or parses to a non-object value, `name` or `description`
+  is not a non-empty string, or
   `scripts` is not an object, the invalid field is ignored. The repository
   directory name supplies the product name, the first non-heading README line
   supplies the description when available, and scripts otherwise default to an
