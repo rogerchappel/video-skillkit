@@ -26,7 +26,7 @@ export async function collectRepoFacts(repoDir) {
       facts.summary = extractReadmeSummary(content);
     }
     if (file === "package.json") {
-      const packageJson = JSON.parse(content);
+      const packageJson = parseOptionalPackageJson(content);
       const metadata = isObject(packageJson) ? packageJson : {};
       facts.packageName = normalizedString(metadata.name) ?? facts.name;
       facts.packageDescription = normalizedString(metadata.description);
@@ -42,6 +42,14 @@ export async function collectRepoFacts(repoDir) {
   }
 
   return facts;
+}
+
+function parseOptionalPackageJson(content) {
+  try {
+    return JSON.parse(content);
+  } catch {
+    return {};
+  }
 }
 
 function normalizedString(value) {
