@@ -91,6 +91,25 @@ test("brief completes with normalized null and wrong-type package metadata", asy
   }
 });
 
+test("brief completes with syntactically invalid package metadata", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "video-skillkit-cli-invalid-package-"));
+  const repo = path.join(cwd, "source-repo");
+  const outDir = path.join(cwd, "video-plan");
+  await mkdir(repo);
+  await writeFile(path.join(repo, "README.md"), "# Example\n\nInvalid JSON fallback summary.\n");
+  await writeFile(path.join(repo, "package.json"), '{"name":');
+
+  const result = runCli(["brief", repo, "--out", outDir], cwd);
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stderr, "");
+  assert.match(result.stdout, /Wrote .*video\.json/);
+  const manifest = JSON.parse(await readFile(path.join(outDir, "video.json"), "utf8"));
+  assert.equal(manifest.product.name, path.basename(repo));
+  assert.equal(manifest.product.description, "Invalid JSON fallback summary.");
+  await rm(cwd, { recursive: true, force: true });
+});
+
 test("validate returns a JSON report for malformed core fields", async () => {
   const cwd = await mkdtemp(path.join(os.tmpdir(), "video-skillkit-cli-"));
   const file = path.join(cwd, "video.json");
