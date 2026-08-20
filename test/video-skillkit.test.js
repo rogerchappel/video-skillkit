@@ -60,6 +60,23 @@ test("normalizes arrays and wrong-type package fields", async () => {
   }
 });
 
+test("normalizes syntactically invalid package metadata", async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), "video-skillkit-invalid-package-"));
+  await writeFile(path.join(repo, "README.md"), "# Example\n\nInvalid JSON fallback summary.\n");
+  await writeFile(path.join(repo, "package.json"), '{"name":');
+
+  const facts = await collectRepoFacts(repo);
+  const manifest = await buildVideoBrief(repo);
+
+  assert.equal(facts.packageName, path.basename(repo));
+  assert.equal(facts.packageDescription, null);
+  assert.deepEqual(facts.scripts, []);
+  assert.equal(manifest.product.name, path.basename(repo));
+  assert.equal(manifest.product.description, "Invalid JSON fallback summary.");
+  assertManifestTextIsNormalized(manifest);
+  await rm(repo, { recursive: true, force: true });
+});
+
 test("validates generated manifests and reports checked assets", async () => {
   const tmp = await mkdtemp(path.join(os.tmpdir(), "video-skillkit-"));
   const manifest = await buildVideoBrief("fixtures/product-repo");
