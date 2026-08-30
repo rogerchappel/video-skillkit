@@ -5,7 +5,7 @@
 ## Quickstart
 
 ```bash
-npm install
+npm ci
 npm run smoke
 node bin/video-skillkit.js brief fixtures/product-repo --out video-plan
 node bin/video-skillkit.js validate video-plan/video.json
@@ -66,8 +66,12 @@ asset paths were checked, even when other manifest fields are invalid.
 Run the same release gate used by CI before opening a PR:
 
 ```bash
+npm ci
 npm run release:check
 ```
+
+The committed lockfile makes `npm ci` reproducible locally and across the
+supported Node.js 20, 22, and 24 CI matrix.
 
 The release gate covers:
 
