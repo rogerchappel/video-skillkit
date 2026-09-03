@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Discover common README filename casing and skip presentation chrome when
+  selecting repository summary prose.
 - Verify the packed npm artifact by installing it in a clean temporary project
   and running the CLI against the bundled smoke fixture.
 
