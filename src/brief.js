@@ -17,7 +17,7 @@ export async function buildVideoBrief(repoDir) {
     product: {
       name: productName,
       description: value,
-      evidence: facts.files.filter((file) => ["README.md", "package.json"].includes(file))
+      evidence: facts.files.filter((file) => file.toLowerCase() === "readme.md" || file === "package.json")
     },
     hook: `Show how ${productName} turns local project facts into a safer demo plan.`,
     script: [
