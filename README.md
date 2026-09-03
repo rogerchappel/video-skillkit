@@ -48,14 +48,18 @@ asset paths were checked, even when other manifest fields are invalid.
 
 ## Limitations
 
-- V1 inspects top-level README and package metadata only.
+- V1 inspects top-level README and package metadata only. README discovery
+  accepts common `README.md`, `readme.md`, and `Readme.md` casing. Summary
+  extraction skips headings plus common HTML image/centering, badge, image, and
+  link-only navigation lines before selecting prose. A sparse README with no
+  prose retains its first non-heading line as a conservative fallback.
 - Source package metadata is treated as optional input. If `package.json` is
   syntactically invalid or parses to a non-object value, `name` or `description`
   is not a non-empty string, or
   `scripts` is not an object, the invalid field is ignored. The repository
-  directory name supplies the product name, the first non-heading README line
-  supplies the description when available, and scripts otherwise default to an
-  empty list.
+  directory name supplies the product name, meaningful README prose supplies
+  the description when available, and scripts otherwise default to an empty
+  list.
 - V1 discovers regular files directly inside `assets/`; nested asset directories are ignored.
 - Asset validation requires each manifest asset to have a non-empty string `path`
   that resolves to a regular file. It does not assess visual suitability.
