@@ -110,6 +110,28 @@ test("brief completes with syntactically invalid package metadata", async () => 
   await rm(cwd, { recursive: true, force: true });
 });
 
+test("brief uses meaningful prose from a lowercase README", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "video-skillkit-cli-readme-"));
+  const repo = path.join(cwd, "source-repo");
+  const outDir = path.join(cwd, "video-plan");
+  await mkdir(repo);
+  await writeFile(path.join(repo, "readme.md"), [
+    "# Example",
+    "<p align=\"center\"><img src=\"logo.png\"></p>",
+    "[![CI](https://example.test/badge.svg)](https://example.test/ci)",
+    "[Docs](docs/) | [Examples](examples/)",
+    "Meaningful lowercase README summary."
+  ].join("\n"));
+
+  const result = runCli(["brief", repo, "--out", outDir], cwd);
+
+  assert.equal(result.status, 0, result.stderr);
+  const manifest = JSON.parse(await readFile(path.join(outDir, "video.json"), "utf8"));
+  assert.equal(manifest.product.description, "Meaningful lowercase README summary.");
+  assert.deepEqual(manifest.product.evidence, ["readme.md"]);
+  await rm(cwd, { recursive: true, force: true });
+});
+
 test("validate returns a JSON report for malformed core fields", async () => {
   const cwd = await mkdtemp(path.join(os.tmpdir(), "video-skillkit-cli-"));
   const file = path.join(cwd, "video.json");

@@ -33,6 +33,37 @@ test("normalizes null package metadata to repository and README facts", async ()
   await rm(repo, { recursive: true, force: true });
 });
 
+test("discovers lowercase README files and skips presentation chrome", async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), "video-skillkit-readme-"));
+  await writeFile(path.join(repo, "readme.md"), [
+    "# Example",
+    "<div align=\"center\">",
+    '<img src="logo.png" alt="Example">',
+    "</div>",
+    "[![CI](https://example.test/badge.svg)](https://example.test/ci)",
+    "[Docs](docs/) · [API](docs/api.md)",
+    "A grounded summary from meaningful README prose."
+  ].join("\n"));
+
+  const facts = await collectRepoFacts(repo);
+  const manifest = await buildVideoBrief(repo);
+
+  assert.equal(facts.summary, "A grounded summary from meaningful README prose.");
+  assert.equal(manifest.product.description, facts.summary);
+  assert.deepEqual(manifest.product.evidence, ["readme.md"]);
+  await rm(repo, { recursive: true, force: true });
+});
+
+test("retains a sparse README fallback when it only contains chrome", async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), "video-skillkit-sparse-readme-"));
+  await writeFile(path.join(repo, "Readme.md"), "# Example\n\n<div align=\"center\">\n");
+
+  const facts = await collectRepoFacts(repo);
+
+  assert.equal(facts.summary, '<div align="center">');
+  await rm(repo, { recursive: true, force: true });
+});
+
 test("normalizes arrays and wrong-type package fields", async () => {
   const repos = [
     { packageJson: [], summary: "Array package summary." },
