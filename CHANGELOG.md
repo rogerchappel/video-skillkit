@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Enforce the generated V1 product, scene, and caption shape during validation.
 - Discover common README filename casing and skip presentation chrome when
   selecting repository summary prose.
 - Verify the packed npm artifact by installing it in a clean temporary project

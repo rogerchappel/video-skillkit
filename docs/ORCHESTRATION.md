@@ -16,6 +16,8 @@
 
 ## Failure Handling
 
+- Missing or malformed product data, captions, or scene `id`, `visual`, and
+  `voiceover` fields block the handoff to downstream production.
 - Missing assets, directories, and malformed asset entries block downstream production.
 - Promotional warnings require human or agent review before publishing.
 - Invalid schema versions should be regenerated with the current CLI.

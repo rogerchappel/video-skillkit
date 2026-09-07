@@ -24,10 +24,13 @@ Unknown options, extra positional arguments, and `--out` without a value are rej
 ### Manifest validation contract
 
 A V1 manifest is a JSON object with `schemaVersion` set to `video-skillkit.v1`;
-non-empty string values for `repoRoot`, `title`, `hook`, and `script`; a non-empty
-`scenes` array of objects; and a non-empty `safetyNotes` array of non-empty
-strings. `assets` is optional, but when present it must be an array of objects
-with non-empty string `path` values.
+non-empty string values for `repoRoot`, `title`, `hook`, and `script`; and a
+`product` object with non-empty string `name` and `description` values plus an
+`evidence` array of non-empty strings. It also requires a non-empty `scenes`
+array whose objects have non-empty string `id`, `visual`, and `voiceover`
+values; a non-empty `captions` array of non-empty strings; and a non-empty
+`safetyNotes` array of non-empty strings. `assets` is optional, but when
+present it must be an array of objects with non-empty string `path` values.
 
 The `validate` command always prints a JSON report for a parsed manifest. Invalid
 field types are listed deterministically in `errors`, `ok` is `false`, and the
