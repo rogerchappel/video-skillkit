@@ -139,9 +139,16 @@ test("validate returns a JSON report for malformed core fields", async () => {
     schemaVersion: "video-skillkit.v1",
     repoRoot: [],
     title: {},
+    product: { name: "", description: 42, evidence: [""] },
     hook: 42,
     script: true,
-    scenes: [null],
+    scenes: [
+      null,
+      { id: "", visual: "Demo", voiceover: "Narration" },
+      { id: "scene-2", visual: 42, voiceover: "Narration" },
+      { id: "scene-3", visual: "Demo", voiceover: [] }
+    ],
+    captions: [""],
     safetyNotes: [false],
     assets: []
   }));
@@ -154,10 +161,17 @@ test("validate returns a JSON report for malformed core fields", async () => {
   assert.equal(report.ok, false);
   assert.deepEqual(report.errors, [
     "title must be a non-empty string",
+    "product.name must be a non-empty string",
+    "product.description must be a non-empty string",
+    "Product evidence at index 0 must be a non-empty string",
     "hook must be a non-empty string",
     "script must be a non-empty string",
     "repoRoot must be a non-empty string",
     "Scene at index 0 must be an object",
+    "Scene at index 1 id must be a non-empty string",
+    "Scene at index 2 visual must be a non-empty string",
+    "Scene at index 3 voiceover must be a non-empty string",
+    "Caption at index 0 must be a non-empty string",
     "Safety note at index 0 must be a non-empty string"
   ]);
   assert.equal(report.checkedAssets, 0);
