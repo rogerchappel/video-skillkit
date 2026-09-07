@@ -210,11 +210,23 @@ test("reports malformed asset entries without throwing", async () => {
 test("reports malformed core manifest fields without throwing", async (t) => {
   const cases = [
     ["title", {}, "title must be a non-empty string"],
+    ["product", undefined, "product must be an object"],
+    ["product", [], "product must be an object"],
+    ["product", { name: "", description: "Demo", evidence: [] }, "product.name must be a non-empty string"],
+    ["product", { name: "Demo", description: 42, evidence: [] }, "product.description must be a non-empty string"],
+    ["product", { name: "Demo", description: "Demo", evidence: {} }, "product.evidence must be an array"],
+    ["product", { name: "Demo", description: "Demo", evidence: [""] }, "Product evidence at index 0 must be a non-empty string"],
     ["hook", 42, "hook must be a non-empty string"],
     ["script", true, "script must be a non-empty string"],
     ["repoRoot", [], "repoRoot must be a non-empty string"],
     ["scenes", {}, "At least one scene is required"],
     ["scenes", [null], "Scene at index 0 must be an object"],
+    ["scenes", [{ id: "", visual: "Demo", voiceover: "Narration" }], "Scene at index 0 id must be a non-empty string"],
+    ["scenes", [{ id: "scene-1", visual: 42, voiceover: "Narration" }], "Scene at index 0 visual must be a non-empty string"],
+    ["scenes", [{ id: "scene-1", visual: "Demo", voiceover: [] }], "Scene at index 0 voiceover must be a non-empty string"],
+    ["captions", undefined, "At least one caption is required"],
+    ["captions", [], "At least one caption is required"],
+    ["captions", [""], "Caption at index 0 must be a non-empty string"],
     ["safetyNotes", "review claims", "Safety notes are required"],
     ["safetyNotes", [false], "Safety note at index 0 must be a non-empty string"]
   ];
@@ -248,7 +260,9 @@ test("rejects assets in sibling directories with a shared path prefix", async ()
     title: "Containment test",
     hook: "Verify local assets",
     script: "Validate assets before production.",
-    scenes: [{ id: "scene-1" }],
+    product: { name: "Containment test", description: "Test asset containment.", evidence: [] },
+    scenes: [{ id: "scene-1", visual: "Asset path", voiceover: "Keep assets local." }],
+    captions: ["Assets stay inside the repository."],
     safetyNotes: ["Keep assets inside the repository."],
     assets: [{ path: siblingAsset }]
   };
