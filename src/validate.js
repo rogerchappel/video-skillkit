@@ -20,12 +20,45 @@ export async function validateManifest(manifestPath) {
       errors.push(`${field} must be a non-empty string`);
     }
   }
+  if (!manifest.product || typeof manifest.product !== "object" || Array.isArray(manifest.product)) {
+    errors.push("product must be an object");
+  } else {
+    for (const field of ["name", "description"]) {
+      if (typeof manifest.product[field] !== "string" || manifest.product[field].trim() === "") {
+        errors.push(`product.${field} must be a non-empty string`);
+      }
+    }
+    if (!Array.isArray(manifest.product.evidence)) {
+      errors.push("product.evidence must be an array");
+    } else {
+      for (const [index, evidence] of manifest.product.evidence.entries()) {
+        if (typeof evidence !== "string" || evidence.trim() === "") {
+          errors.push(`Product evidence at index ${index} must be a non-empty string`);
+        }
+      }
+    }
+  }
   if (!Array.isArray(manifest.scenes) || manifest.scenes.length === 0) {
     errors.push("At least one scene is required");
   } else {
     for (const [index, scene] of manifest.scenes.entries()) {
       if (!scene || typeof scene !== "object" || Array.isArray(scene)) {
         errors.push(`Scene at index ${index} must be an object`);
+        continue;
+      }
+      for (const field of ["id", "visual", "voiceover"]) {
+        if (typeof scene[field] !== "string" || scene[field].trim() === "") {
+          errors.push(`Scene at index ${index} ${field} must be a non-empty string`);
+        }
+      }
+    }
+  }
+  if (!Array.isArray(manifest.captions) || manifest.captions.length === 0) {
+    errors.push("At least one caption is required");
+  } else {
+    for (const [index, caption] of manifest.captions.entries()) {
+      if (typeof caption !== "string" || caption.trim() === "") {
+        errors.push(`Caption at index ${index} must be a non-empty string`);
       }
     }
   }

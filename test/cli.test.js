@@ -161,12 +161,12 @@ test("validate returns a JSON report for malformed core fields", async () => {
   assert.equal(report.ok, false);
   assert.deepEqual(report.errors, [
     "title must be a non-empty string",
-    "product.name must be a non-empty string",
-    "product.description must be a non-empty string",
-    "Product evidence at index 0 must be a non-empty string",
     "hook must be a non-empty string",
     "script must be a non-empty string",
     "repoRoot must be a non-empty string",
+    "product.name must be a non-empty string",
+    "product.description must be a non-empty string",
+    "Product evidence at index 0 must be a non-empty string",
     "Scene at index 0 must be an object",
     "Scene at index 1 id must be a non-empty string",
     "Scene at index 2 visual must be a non-empty string",
