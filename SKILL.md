@@ -33,3 +33,5 @@ Run `npm run release:check` before publishing updates. The release check include
 `npm run package:smoke`, which installs the packed artifact in a clean temporary
 project and validates a manifest generated from its bundled public fixture.
 Validation fails on missing assets and warns on over-strong promotional claims.
+It also rejects incomplete handoffs: product name, description, and evidence;
+scene id, visual, and voiceover; and at least one non-empty caption are required.
