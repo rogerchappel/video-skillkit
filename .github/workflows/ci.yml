@@ -25,3 +25,7 @@ jobs:
         run: npm ci
       - name: Run release check
         run: npm run release:check
+      - name: Run smoke test
+        run: npm run smoke
+      - name: Run package smoke test
+        run: npm run package:smoke
