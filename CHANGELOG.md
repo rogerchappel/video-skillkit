@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add fixture-backed parsing for Markdown changelog release sections.
 - Enforce the generated V1 product, scene, and caption shape during validation.
 - Discover common README filename casing and skip presentation chrome when
   selecting repository summary prose.
