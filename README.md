@@ -21,6 +21,17 @@ video-skillkit validate video-plan/video.json
 The `brief` command emits `video.json` for downstream tools and `brief.md` for human review.
 Unknown options, extra positional arguments, and `--out` without a value are rejected with usage guidance.
 
+### Changelog parsing
+
+The library exports `parseChangelog(markdown)` and `readChangelog(repoDir)` from
+`src/changelog.js`. The parser accepts UTF-8 Markdown with `##` release headings,
+collects bullet entries in each section (including subsections), and returns
+sections in document order with title, optional ISO date, optional link URL, and
+change list. Date recognition supports headings such as `1.2.0 - 2026-08-14`;
+no heading convention or date is required. A changelog without release headings
+returns an empty list. `readChangelog` reads the conventional top-level
+`CHANGELOG.md` file.
+
 ### Manifest validation contract
 
 A V1 manifest is a JSON object with `schemaVersion` set to `video-skillkit.v1`;
